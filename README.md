@@ -7,9 +7,12 @@ Retorna as informações do novo corona vírus no Brasil buscando no [Bing](http
 - updated -> timestamp (Horário que foi atualizado),
 - old -> timestamps (Atualizações salvas no data.txt para acesso em /old),
 - data -> states ('sp', 'df', 'rj', etc...),
-- data -> confirmed (Número de casos confirmados),
-- data -> revored (Número de casos recuperados),
-- data -> deaths (Número de casos fatais)
+- data -> {state} -> confirmed (Número de casos confirmados),
+- data -> {state} -> recovered (Número de casos recuperados),
+- data -> {state} -> deaths (Número de casos fatais),
+- data -> confirmed (Número total de casos confirmados),
+- data -> revored (Número total de recuperados),
+- data -> deaths (Número total de casos fatais)
 
 ### **Pasta old**
 - data.json -> (Possui um backup do data.json antes de atualizar),
