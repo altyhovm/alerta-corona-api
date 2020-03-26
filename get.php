@@ -119,7 +119,7 @@ $new = [
   "data" => [
     "states" => $states,
     "confirmed" => $get['totalConfirmed'],
-    "revored" => $get['totalRecovered'],
+    "recovered" => $get['totalRecovered'],
     "deaths" => $get['totalDeaths']
   ]
 ];
