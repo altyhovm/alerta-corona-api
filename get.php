@@ -2,23 +2,22 @@
 
 $get = file_get_contents('https://www.bing.com/covid/data');
 $get = json_decode($get, true);
-$get = $get['areas'];
 
-$len = count($get);
+$len = count($get['areas']);
 
 for ($i = 0; $i < $len; $i++) {
-  if ($get[$i]['id'] == 'brazil') {
+  if ($get['areas'][$i]['id'] == 'brazil') {
     $key = $i;
   }
 }
 
-$get = $get[$key];
+$brazil = $get['areas'][$key];
 
-if ($get['id'] != 'brazil') {
+if ($brazil['id'] != 'brazil') {
   return false;
 }
 
-$areas = $get['areas'];
+$areas = $brazil['areas'];
 $len = count($areas);
 $states = [];
 
@@ -110,18 +109,32 @@ for ($i = 0; $i < $len; $i++) {
       break;
   }
 
-  $states += [$indice => $areas[$i]];
+  $states += [$indice => [
+    'name' => $areas[$i]['displayName'],
+    'confirmed' => $areas[$i]['totalConfirmed'],
+    'recovered' => $areas[$i]['totalRecovered'],
+    'deaths' => $areas[$i]['totalDeaths']
+  ]];
 }
 
+
+
+
 $new = [
-  "updated" => time(),
-  "old" => [],
-  "data" => [
+  "brazil" => [
+    "updated" => time(),
     "states" => $states,
+    "confirmed" => $brazil['totalConfirmed'],
+    "recovered" => $brazil['totalRecovered'],
+    "deaths" => $brazil['totalDeaths']
+  ],
+  "world" => [
+    "updated" => time(),
     "confirmed" => $get['totalConfirmed'],
     "recovered" => $get['totalRecovered'],
     "deaths" => $get['totalDeaths']
-  ]
+  ],
+  "old" => []
 ];
 
 $time = time();
@@ -130,56 +143,96 @@ if (!is_dir('old')) {
   mkdir('old', 0777, true);
 }
 
-
 if (!file_exists('data.json')) {
   $json = fopen('data.json', 'w');
   $new['old'] = $time;
   $new = json_encode($new);
   fwrite($json, $new);
   fclose($json);
+  echo "data.json criado com sucesso! <br>";
 
   $txt = fopen('data.txt', 'a');
   fwrite($txt, "data.json" . PHP_EOL);
   fclose($txt);
+  echo "data.txt criado com sucesso! <br>";
 
   copy('data.json', 'old/data.json');
+  echo "backup realizado com sucesso! <br>";
 } else {
+
+  function old($time)
+  {
+    copy('data.json', 'old/data.json');
+    echo "backup realizado com sucesso! <br>";
+
+    $old = file_get_contents('data.json');
+    $old = json_decode($old, true);
+
+    if (is_int($old['old'])) {
+      $old['old'] = [
+        $old['old'],
+        $time
+      ];
+    } else {
+      array_push($old['old'], $time);
+    }
+    $old = json_encode($old);
+
+    $jsonOld = fopen('data.json', 'w');
+    fwrite($jsonOld, $old);
+    fclose($jsonOld);
+
+    $oldJson = fopen('old/' . $time . '.json', 'w');
+    fwrite($oldJson, $old);
+    fclose($oldJson);
+    echo "backup old/{$time}.json criado com sucesso! <br>";
+
+    $txt = fopen('data.txt', 'a');
+    fwrite($txt, $time . PHP_EOL);
+    fclose($txt);
+    echo "LOG: {$time} foi escrito em data.txt <br>";
+  }
 
   $check = file_get_contents('data.json');
   $check = json_decode($check, true);
 
-  if ($check['data']['confirmed'] != $get['totalConfirmed']) {
-
-    copy('data.json', 'old/data.json');
-
+  if ($check['world']['confirmed'] != $get['totalConfirmed']) {
     $data = file_get_contents('data.json');
     $data = json_decode($data, true);
-    $addData = $data['old'];
-    $oldData = $data['updated'];
+    $data['world']['updated'] = $time;
+    $data['world']['confirmed'] = $get['totalConfirmed'];
+    $data['world']['recovered'] = $get['totalRecovered'];
+    $data['world']['deaths'] = $get['totalDeaths'];
+
     $data = json_encode($data);
-
-    $oldJson = fopen('old/' . $oldData . '.json', 'w');
-    fwrite($oldJson, $data);
-    fclose($oldJson);
-
-    $txt = fopen('data.txt', 'a');
-    fwrite($txt, $oldData . PHP_EOL);
-    fclose($txt);
-
-    if (is_int($addData)) {
-      $addData = [
-        $addData,
-        $time
-      ];
-    } else {
-      array_push($addData, $time);
-    }
-
-    $new['old'] += $addData;
-    $new = json_encode($new);
-
     $json = fopen('data.json', 'w');
-    fwrite($json, $new);
+    fwrite($json, $data);
     fclose($json);
+    echo "informações no mundo atualizada! <br>";
+  }
+
+  if ($check['brazil']['confirmed'] != $brazil['totalConfirmed']) {
+    $data = file_get_contents('data.json');
+    $data = json_decode($data, true);
+    $data['brazil']['updated'] = $time;
+    $data['brazil']['states'] = $states;
+    $data['brazil']['confirmed'] = $brazil['totalConfirmed'];
+    $data['brazil']['recovered'] = $brazil['totalRecovered'];
+    $data['brazil']['deaths'] = $brazil['totalDeaths'];
+
+    $data = json_encode($data);
+    $json = fopen('data.json', 'w');
+    fwrite($json, $data);
+    fclose($json);
+    echo "informações no Brasil atualizada! <br>";
+  }
+
+  if ($check['world']['confirmed'] != $get['totalConfirmed'] && $check['brazil']['confirmed'] != $brazil['totalConfirmed']) {
+    old($time);
+  } elseif ($check['world']['confirmed'] != $get['totalConfirmed']) {
+    old($time);
+  } elseif ($check['brazil']['confirmed'] != $brazil['totalConfirmed']) {
+    old($time);
   }
 }
+echo "sem novas informações!";
