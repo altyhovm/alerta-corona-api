@@ -229,9 +229,9 @@ if (!file_exists('data.json')) {
 
   if ($check['brazil']['confirmed'] != $brazil['totalConfirmed'] || $check['brazil']['recovered'] != $brazil['totalRecovered'] || $check['brazil']['deaths'] != $brazil['totalDeaths'] && $check['world']['confirmed'] != $get['totalConfirmed'] || $check['world']['recovered'] != $get['totalRecovered'] || $check['world']['deaths'] != $get['totalDeaths']) {
     old($time);
-  } elseif ($check['world']['confirmed'] != $get['totalConfirmed']) {
+  } elseif ($check['world']['confirmed'] != $get['totalConfirmed'] || $check['world']['recovered'] != $get['totalRecovered'] || $check['world']['deaths'] != $get['totalDeaths']) {
     old($time);
-  } elseif ($check['brazil']['confirmed'] != $brazil['totalConfirmed']) {
+  } elseif ($check['brazil']['confirmed'] != $brazil['totalConfirmed'] || $check['brazil']['recovered'] != $brazil['totalRecovered'] || $check['brazil']['deaths'] != $brazil['totalDeaths']) {
     old($time);
   }
 }
