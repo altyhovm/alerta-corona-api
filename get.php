@@ -211,7 +211,7 @@ if (!file_exists('data.json')) {
     echo "informações no mundo atualizada! <br>";
   }
 
-  if ($check['world']['confirmed'] != $get['totalConfirmed'] || $check['world']['recovered'] != $get['totalRecovered'] || $check['world']['deaths'] != $get['totalDeaths'] && $check['brazil']['confirmed'] != $brazil['totalConfirmed'] || $check['brazil']['recovered'] != $brazil['totalRecovered'] || $check['brazil']['deaths'] != $brazil['totalDeaths']) {
+  if ($check['brazil']['confirmed'] != $get['totalConfirmed'] || $check['brazil']['recovered'] != $get['totalRecovered'] || $check['brazil']['deaths'] != $get['totalDeaths'] && $check['brazil']['confirmed'] != $brazil['totalConfirmed'] || $check['brazil']['recovered'] != $brazil['totalRecovered'] || $check['brazil']['deaths'] != $brazil['totalDeaths']) {
     $data = file_get_contents('data.json');
     $data = json_decode($data, true);
     $data['brazil']['updated'] = $time;
