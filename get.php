@@ -145,10 +145,10 @@ if (!file_exists('data.json')) {
   copy('data.json', 'old/data.json');
 } else {
 
-  $verificar = file_get_contents('data.json');
-  $verificar = json_decode($verificar, true);
+  $check = file_get_contents('data.json');
+  $check = json_decode($check, true);
 
-  if ($verificar['data']['confirmed'] == $get['totalConfirmed']) {
+  if ($check['data']['confirmed'] != $get['totalConfirmed']) {
 
     copy('data.json', 'old/data.json');
 
