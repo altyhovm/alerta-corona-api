@@ -196,7 +196,7 @@ if (!file_exists('data.json')) {
   $check = file_get_contents('data.json');
   $check = json_decode($check, true);
 
-  if ($check['world']['confirmed'] != $get['totalConfirmed']) {
+  if ($check['world']['confirmed'] != $get['totalConfirmed'] || $check['world']['recovered'] != $get['totalRecovered'] || $check['world']['deaths'] != $get['totalDeaths']) {
     $data = file_get_contents('data.json');
     $data = json_decode($data, true);
     $data['world']['updated'] = $time;
@@ -211,7 +211,7 @@ if (!file_exists('data.json')) {
     echo "informações no mundo atualizada! <br>";
   }
 
-  if ($check['brazil']['confirmed'] != $brazil['totalConfirmed']) {
+  if ($check['world']['confirmed'] != $get['totalConfirmed'] || $check['world']['recovered'] != $get['totalRecovered'] || $check['world']['deaths'] != $get['totalDeaths'] && $check['brazil']['confirmed'] != $brazil['totalConfirmed'] || $check['brazil']['recovered'] != $brazil['totalRecovered'] || $check['brazil']['deaths'] != $brazil['totalDeaths']) {
     $data = file_get_contents('data.json');
     $data = json_decode($data, true);
     $data['brazil']['updated'] = $time;
@@ -227,7 +227,7 @@ if (!file_exists('data.json')) {
     echo "informações no Brasil atualizada! <br>";
   }
 
-  if ($check['world']['confirmed'] != $get['totalConfirmed'] && $check['brazil']['confirmed'] != $brazil['totalConfirmed']) {
+  if ($check['brazil']['confirmed'] != $brazil['totalConfirmed'] || $check['brazil']['recovered'] != $brazil['totalRecovered'] || $check['brazil']['deaths'] != $brazil['totalDeaths']) {
     old($time);
   } elseif ($check['world']['confirmed'] != $get['totalConfirmed']) {
     old($time);
