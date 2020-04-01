@@ -1,6 +1,13 @@
 <?php
 
-$get = file_get_contents('https://www.bing.com/covid/data');
+$get = file_get_contents('https://bing.com/covid/local/brazil');
+
+$explode = explode("data=", $get);
+$explode = $explode[1];
+
+$explode = explode(";</script></div></body></html>", $explode);
+$get = $explode[0];
+
 $get = json_decode($get, true);
 
 $len = count($get['areas']);
