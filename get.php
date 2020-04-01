@@ -1,145 +1,124 @@
 <?php
 
-$get = file_get_contents('https://bing.com/covid/local/brazil');
+$brazil = file_get_contents('https://covid19-brazil-api.now.sh/api/report/v1/brazil');
 
-$explode = explode("data=", $get);
-$explode = $explode[1];
+$states = file_get_contents('https://covid19-brazil-api.now.sh/api/report/v1');
 
-$explode = explode(";</script></div></body></html>", $explode);
-$get = $explode[0];
+$brazil = json_decode($brazil, true);
+$brazil = $brazil['data'];
 
-$get = json_decode($get, true);
+$states = json_decode($states, true);
+$states = $states['data'];
 
-$len = count($get['areas']);
+$len = count($states);
 
-for ($i = 0; $i < $len; $i++) {
-  if ($get['areas'][$i]['id'] == 'brazil') {
-    $key = $i;
-  }
-}
-
-$brazil = $get['areas'][$key];
-
-if ($brazil['id'] != 'brazil') {
-  return false;
-}
-
-$areas = $brazil['areas'];
-$len = count($areas);
-$states = [];
+$statesUp = [];
 
 for ($i = 0; $i < $len; $i++) {
 
-  $indice = $areas[$i]['id'];
+  $indice = $states[$i]['uf'];
 
   switch ($indice) {
-    case 'acre_brazil':
+    case 'AC':
       $indice = 'ac';
       break;
-    case 'amazonas_brazil':
+    case 'AM':
       $indice = 'am';
       break;
-    case 'amap_brazil':
+    case 'AP':
       $indice = 'ap';
       break;
-    case 'par_brazil':
+    case 'PA':
       $indice = 'pa';
       break;
-    case 'rondnia_brazil':
+    case 'RO':
       $indice = 'ro';
       break;
-    case 'roraima_brazil':
+    case 'RR':
       $indice = 'rr';
       break;
-    case 'tocantins_brazil':
+    case 'TO':
       $indice = 'to';
       break;
-    case 'alagoas_brazil':
+    case 'AL':
       $indice = 'al';
       break;
-    case 'bahia_brazil':
+    case 'BA':
       $indice = 'ba';
       break;
-    case 'cear_brazil':
+    case 'CE':
       $indice = 'ce';
       break;
-    case 'maranho_brazil':
+    case 'MA':
       $indice = 'ma';
       break;
-    case 'paraba_brazil':
+    case 'PB':
       $indice = 'pb';
       break;
-    case 'pernambuco_brazil':
+    case 'PE':
       $indice = 'pe';
       break;
-    case 'piau_brazil':
+    case 'PI':
       $indice = 'pi';
       break;
-    case 'riograndedonorte_brazil':
+    case 'RN':
       $indice = 'rn';
       break;
-    case 'sergipe_brazil':
+    case 'SE':
       $indice = 'se';
       break;
-    case 'espritosanto_brazil':
+    case 'ES':
       $indice = 'es';
       break;
-    case 'minasgerais_brazil':
+    case 'MG':
       $indice = 'mg';
       break;
-    case 'riodejaneiro_brazil':
+    case 'RJ':
       $indice = 'rj';
       break;
-    case 'sopaulo_brazil':
+    case 'SP':
       $indice = 'sp';
       break;
-    case 'distritofederal_brazil':
+    case 'DF':
       $indice = 'df';
       break;
-    case 'gois_brazil':
+    case 'GO':
       $indice = 'go';
       break;
-    case 'matogrossodosul_brazil':
+    case 'MS':
       $indice = 'ms';
       break;
-    case 'matogrosso_brazil':
+    case 'MT':
       $indice = 'mt';
       break;
-    case 'paran_brazil':
+    case 'PR':
       $indice = 'pr';
       break;
-    case 'santacatarina_brazil':
+    case 'SC':
       $indice = 'sc';
       break;
-    case 'riograndedosul_brazil':
+    case 'RS':
       $indice = 'rs';
       break;
   }
 
-  $states += [$indice => [
-    'name' => $areas[$i]['displayName'],
-    'confirmed' => $areas[$i]['totalConfirmed'],
-    'recovered' => $areas[$i]['totalRecovered'],
-    'deaths' => $areas[$i]['totalDeaths']
+  $statesUp += [$indice => [
+    'name' => $states[$i]['state'],
+    'confirmed' => $states[$i]['cases'],
+    'recovered' => null,
+    'deaths' => $states[$i]['deaths'],
+    'datetime' => $states[$i]['datetime']
   ]];
 }
-
-
 
 
 $new = [
   "brazil" => [
     "updated" => time(),
-    "states" => $states,
-    "confirmed" => $brazil['totalConfirmed'],
-    "recovered" => $brazil['totalRecovered'],
-    "deaths" => $brazil['totalDeaths']
-  ],
-  "world" => [
-    "updated" => time(),
-    "confirmed" => $get['totalConfirmed'],
-    "recovered" => $get['totalRecovered'],
-    "deaths" => $get['totalDeaths']
+    "states" => $statesUp,
+    "confirmed" => $brazil['cases'],
+    "recovered" => $brazil['recovered'],
+    "deaths" => $brazil['deaths']
   ],
   "old" => []
 ];
@@ -203,29 +182,61 @@ if (!file_exists('data.json')) {
   $check = file_get_contents('data.json');
   $check = json_decode($check, true);
 
-  if ($check['world']['confirmed'] != $get['totalConfirmed'] || $check['world']['recovered'] != $get['totalRecovered'] || $check['world']['deaths'] != $get['totalDeaths']) {
-    $data = file_get_contents('data.json');
-    $data = json_decode($data, true);
-    $data['world']['updated'] = $time;
-    $data['world']['confirmed'] = $get['totalConfirmed'];
-    $data['world']['recovered'] = $get['totalRecovered'];
-    $data['world']['deaths'] = $get['totalDeaths'];
 
-    $data = json_encode($data);
-    $json = fopen('data.json', 'w');
-    fwrite($json, $data);
-    fclose($json);
-    echo "informações no mundo atualizada! <br>";
+  for ($i = 0; $i < $len; $i++) {
+
+    foreach ($check['brazil']['states'] as $checkUp) {
+      if ($checkUp['datetime'] != $states[$i]['datetime']) {
+        $data = file_get_contents('data.json');
+        $data = json_decode($data, true);
+        $data['brazil']['updated'] = $time;
+        $data['brazil']['states'] = $statesUp;
+        $data['brazil']['confirmed'] = $brazil['cases'];
+        $data['brazil']['recovered'] = $brazil['recovered'];
+        $data['brazil']['deaths'] = $brazil['deaths'];
+
+        $data = json_encode($data);
+        $json = fopen('data.json', 'w');
+        fwrite($json, $data);
+        fclose($json);
+        echo "informações nos estados atualizada! <br>";
+
+        old($time);
+
+        return false;
+      }
+    }
   }
 
-  if ($check['brazil']['confirmed'] != $brazil['totalConfirmed'] || $check['brazil']['recovered'] != $brazil['totalRecovered'] || $check['brazil']['deaths'] != $brazil['totalDeaths'] && $check['brazil']['confirmed'] != $brazil['totalConfirmed'] || $check['brazil']['recovered'] != $brazil['totalRecovered'] || $check['brazil']['deaths'] != $brazil['totalDeaths']) {
+
+  if (isset($_GET['force'])) {
+    $url = filter_var($_GET['force'], FILTER_SANITIZE_STRING);
+    if ($url) {
+      $data = file_get_contents('data.json');
+      $data = json_decode($data, true);
+      $data['brazil']['updated'] = $time;
+      $data['brazil']['states'] = $statesUp;
+      $data['brazil']['confirmed'] = $brazil['cases'];
+      $data['brazil']['recovered'] = $brazil['recovered'];
+      $data['brazil']['deaths'] = $brazil['deaths'];
+
+      $data = json_encode($data);
+      $json = fopen('data.json', 'w');
+      fwrite($json, $data);
+      fclose($json);
+      echo "informações forçadas atualizada! <br>";
+    }
+  }
+
+
+  if ($check['brazil']['confirmed'] != $brazil['cases'] || $check['brazil']['recovered'] != $brazil['recovered'] || $check['brazil']['deaths'] != $brazil['deaths']) {
     $data = file_get_contents('data.json');
     $data = json_decode($data, true);
     $data['brazil']['updated'] = $time;
-    $data['brazil']['states'] = $states;
-    $data['brazil']['confirmed'] = $brazil['totalConfirmed'];
-    $data['brazil']['recovered'] = $brazil['totalRecovered'];
-    $data['brazil']['deaths'] = $brazil['totalDeaths'];
+    $data['brazil']['states'] = $statesUp;
+    $data['brazil']['confirmed'] = $brazil['cases'];
+    $data['brazil']['recovered'] = $brazil['recovered'];
+    $data['brazil']['deaths'] = $brazil['deaths'];
 
     $data = json_encode($data);
     $json = fopen('data.json', 'w');
@@ -234,11 +245,7 @@ if (!file_exists('data.json')) {
     echo "informações no Brasil atualizada! <br>";
   }
 
-  if ($check['brazil']['confirmed'] != $brazil['totalConfirmed'] || $check['brazil']['recovered'] != $brazil['totalRecovered'] || $check['brazil']['deaths'] != $brazil['totalDeaths'] && $check['world']['confirmed'] != $get['totalConfirmed'] || $check['world']['recovered'] != $get['totalRecovered'] || $check['world']['deaths'] != $get['totalDeaths']) {
-    old($time);
-  } elseif ($check['world']['confirmed'] != $get['totalConfirmed'] || $check['world']['recovered'] != $get['totalRecovered'] || $check['world']['deaths'] != $get['totalDeaths']) {
-    old($time);
-  } elseif ($check['brazil']['confirmed'] != $brazil['totalConfirmed'] || $check['brazil']['recovered'] != $brazil['totalRecovered'] || $check['brazil']['deaths'] != $brazil['totalDeaths']) {
+  if ($check['brazil']['confirmed'] != $brazil['cases'] || $check['brazil']['deaths'] != $brazil['deaths']) {
     old($time);
   }
 }
